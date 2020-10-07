@@ -9,7 +9,7 @@ class ImageCard extends StatelessWidget {
   const ImageCard({
     Key key,
     @required this.image,
-    this.text = "",
+    this.text,
     this.size,
   }) : super(key: key);
 
@@ -28,10 +28,12 @@ class ImageCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                text,
-                style: TextStyle(fontSize: 25),
-              ),
+              text != null
+                  ? Text(
+                      text,
+                      style: TextStyle(fontSize: 25),
+                    )
+                  : SizedBox(),
               Container(
                 width: size,
                 height: size,

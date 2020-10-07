@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _startGame() async {
     final listOfAssets = await AssetHelper.getAssetPaths(context);
     return Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => GameScreen(listOfAssets: listOfAssets,)));
+        builder: (context) =>
+            GameScreen(listOfAssets: listOfAssets, numberOfObjects: 6,)));
   }
 }
