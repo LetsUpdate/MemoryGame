@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -106,6 +107,12 @@ class _GameScreenState extends State<GameScreen> {
                           print("accept");
                           setState(() {
                             holderList[randomCards.indexOf(e)] = data;
+                            if (_isFull()) {
+                              if (_isGood())
+                                gameState = GameState.done;
+                              else
+                                gameState = GameState.failed;
+                            }
                           });
                         },
                       ),
@@ -182,6 +189,14 @@ class _GameScreenState extends State<GameScreen> {
       copyOfAssets.removeAt(randomNum);
     }
     return randomList.cast<Widget>();
+  }
+
+  bool _isFull() {
+    return !holderList.contains(null);
+  }
+
+  bool _isGood() {
+    return listEquals(randomCards, holderList);
   }
 }
 
