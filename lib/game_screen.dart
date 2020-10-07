@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 
 class GameScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _GameScreenState extends State<GameScreen> {
     randomCards = _orderGenerator();
     holderList = new List(randomCards.length);
     gameState = GameState.Show;
-    shuffeledCards = shuffle(randomCards.toList());
+    shuffeledCards = _shuffleList(randomCards.toList());
     super.initState();
   }
 
@@ -66,7 +67,7 @@ class _GameScreenState extends State<GameScreen> {
     switch (gameState) {
       case GameState.Show:
         body = Center(
-          key: Key("asd"),
+          key: Key("show"),
           child: Column(
             children: [
               _imageHolder(randomCards
@@ -86,11 +87,13 @@ class _GameScreenState extends State<GameScreen> {
 
       case GameState.reorder:
         body = Center(
+            key: Key("reorder"),
             child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _imageHolder(randomCards
-                .map((e) => ImageCard(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _imageHolder(randomCards
+                    .map((e) =>
+                    ImageCard(
                       image: DragTarget<Widget>(
                         builder: (context, list1, list2) {
                           return GestureDetector(
@@ -109,47 +112,62 @@ class _GameScreenState extends State<GameScreen> {
                             holderList[randomCards.indexOf(e)] = data;
                             if (_isFull()) {
                               if (_isGood())
-                                gameState = GameState.done;
+                                _setGameState(GameState.done);
                               else
-                                gameState = GameState.failed;
+                                _setGameState(GameState.failed);
                             }
                           });
                         },
                       ),
                       text: (randomCards.indexOf(e) + 1).toString(),
                     ))
-                .toList()),
-            Wrap(
-              alignment: WrapAlignment.center,
-              verticalDirection: VerticalDirection.up,
-              children: shuffeledCards.map((e) {
-                final isDisabled = holderList.contains(e);
-                final child = ImageCard(
-                  image: isDisabled ? Container() : e,
-                );
+                    .toList()),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  verticalDirection: VerticalDirection.up,
+                  children: shuffeledCards.map((e) {
+                    final isDisabled = holderList.contains(e);
+                    final child = ImageCard(
+                      image: isDisabled ? Container() : e,
+                    );
 
-                return Draggable<Widget>(
-                  maxSimultaneousDrags: isDisabled ? 0 : null,
-                  feedback: Material(
-                    child: child,
-                    color: Colors.transparent,
-                  ),
-                  child: child,
-                  childWhenDragging: ImageCard(
-                    image: SizedBox(),
-                  ),
-                  data: e,
-                );
-              }).toList(),
-            )
-          ],
-        ));
+                    return Draggable<Widget>(
+                      maxSimultaneousDrags: isDisabled ? 0 : null,
+                      feedback: Material(
+                        child: child,
+                        color: Colors.transparent,
+                      ),
+                      child: child,
+                      childWhenDragging: ImageCard(
+                        image: SizedBox(),
+                      ),
+                      data: e,
+                    );
+                  }).toList(),
+                )
+              ],
+            ));
         break;
       case GameState.done:
         body = Text("done");
         break;
       case GameState.failed:
-        body = Text("Failed");
+        body = Center(
+          key: Key('done'),
+          child: Column(
+            children: [
+              _imageHolder(holderList.map((e) =>
+                  ImageCard(
+                    image: Stack(children: [
+                      e,
+                      e == randomCards[holderList.indexOf(e)]
+                          ? Container()
+                          : SvgPicture.asset('assets/redX.svg')
+                    ],), text: (holderList.indexOf(e) + 1).toString(),))
+                  .toList())
+            ],
+          ),
+        );
         break;
     }
 
@@ -162,7 +180,9 @@ class _GameScreenState extends State<GameScreen> {
             duration: Duration(milliseconds: 300), child: body));
   }
 
-  List shuffle(List items) {
+  //region helpers
+
+  List _shuffleList(List items) {
     var random = new Random();
 
     // Go through all elements.
@@ -198,6 +218,7 @@ class _GameScreenState extends State<GameScreen> {
   bool _isGood() {
     return listEquals(randomCards, holderList);
   }
+//endregion
 }
 
 enum GameState { Show, reorder, done, failed }
