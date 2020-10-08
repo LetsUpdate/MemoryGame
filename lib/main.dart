@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pendroid_2020_part1/game_screen.dart';
 import 'package:pendroid_2020_part1/helper.dart';
@@ -11,6 +12,9 @@ import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   await scoreSystem.loadFromSave();
   runApp(MyApp());
 }
