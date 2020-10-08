@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 import 'helper.dart';
 
@@ -29,11 +31,7 @@ class GameScreen extends StatefulWidget {
   * if you can you can go to the next lvl
  */
 class _GameScreenState extends State<GameScreen> {
-  List<Widget> randomCards;
-  GameState gameState;
-  List<Widget> shuffeledCards;
-  List<Widget> holderList;
-
+  final StopWatchTimer _stopWatchTimer = StopWatchTimer();
   static const _title = {
     GameState.Show: "Remember",
     GameState.done: "Success",
@@ -41,16 +39,42 @@ class _GameScreenState extends State<GameScreen> {
     GameState.failed: "Failed",
   };
 
+  List<Widget> randomCards;
+  GameState gameState;
+  List<Widget> shuffeledCards;
+  List<Widget> holderList;
+
   @override
   void initState() {
     randomCards = _orderGenerator();
     holderList = new List(randomCards.length);
     gameState = GameState.Show;
     shuffeledCards = Helper.shuffleList(randomCards.toList());
+
     super.initState();
   }
 
+  @override
+  void dispose() async {
+    super.dispose();
+    await _stopWatchTimer.dispose();
+  }
+
   void _setGameState(GameState state) {
+    switch (state) {
+      case GameState.reorder:
+        _stopWatchTimer.onExecute.add(StopWatchExecute.start);
+        break;
+      case GameState.Show:
+        break;
+      case GameState.done:
+        _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+        break;
+      case GameState.failed:
+        _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+        break;
+    }
+
     setState(() {
       gameState = state;
     });
@@ -67,18 +91,22 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     Widget body;
 
+    const textStyle1 = TextStyle(color: Colors.white, fontSize: 20);
+
+    final orderedWidgets = _imageHolder(randomCards
+        .map((e) => ImageCard(
+              image: e,
+              text: (randomCards.indexOf(e) + 1).toString(),
+            ))
+        .toList());
+
     switch (gameState) {
       case GameState.Show:
         body = Center(
           key: Key("show"),
           child: Column(
             children: [
-              _imageHolder(randomCards
-                  .map((e) => ImageCard(
-                        image: e,
-                        text: (randomCards.indexOf(e) + 1).toString(),
-                      ))
-                  .toList()),
+              orderedWidgets,
               RaisedButton(
                 onPressed: () => _setGameState(GameState.reorder),
                 child: Text('Reorder!'),
@@ -152,39 +180,138 @@ class _GameScreenState extends State<GameScreen> {
             ));
         break;
       case GameState.done:
-        body = Text("done");
+        body = Center(
+          key: Key("done"),
+          child: Column(
+            children: [orderedWidgets,
+              RawMaterialButton(
+                fillColor: Colors.green,
+                splashColor: Colors.greenAccent,
+                shape: const StadiumBorder(),
+                onPressed: () =>
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) =>
+                            GameScreen(listOfAssets: widget.listOfAssets,
+                              difficulty: widget.difficulty,))),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Next',
+                    style: TextStyle(color: Colors.white, fontSize: 25),
+                  ),
+                ),
+              ),
+            ],
+
+          ),
+        );
         break;
       case GameState.failed:
+        int errors = 0;
+        holderList.forEach((element) {
+          if (element != randomCards[holderList.indexOf(element)]) errors++;
+        });
         body = Center(
           key: Key('done'),
           child: Column(
             children: [
-              _imageHolder(holderList.map((e) =>
+              _imageHolder(holderList
+                  .map((e) =>
                   ImageCard(
-                    image: Stack(children: [
-                      e,
-                      e == randomCards[holderList.indexOf(e)]
-                          ? Container()
-                          : SvgPicture.asset('assets/redX.svg')
-                    ],), text: (holderList.indexOf(e) + 1).toString(),))
-                  .toList())
+                    image: Stack(
+                      children: [
+                        e,
+                        e == randomCards[holderList.indexOf(e)]
+                            ? Container()
+                            : SvgPicture.asset('assets/redX.svg')
+                      ],
+                    ),
+                    text: (holderList.indexOf(e) + 1).toString(),
+                  ))
+                  .toList()),
+              Container(
+                margin: EdgeInsets.all(10),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.black54),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("You missed ${errors} objects", style: textStyle1,),
+                    RawMaterialButton(
+                      fillColor: Colors.blue,
+                      splashColor: Colors.greenAccent,
+                      shape: const StadiumBorder(),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Back to the menu',
+                          style: TextStyle(color: Colors.white, fontSize: 25),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                ),
+              )
             ],
           ),
         );
         break;
     }
-
+    DateTime currentBackPressTime;
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
           title: Text(_title[gameState]),
         ),
-        body: AnimatedSwitcher(
-            duration: Duration(milliseconds: 300), child: body));
+        body: WillPopScope(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                child: AnimatedSwitcher(
+                    duration: Duration(milliseconds: 300), child: body),
+              ),
+              StreamBuilder(
+                  stream: _stopWatchTimer.rawTime,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return Text("Timer error");
+                    }
+                    if (!snapshot.hasData) {
+                      return Text("No data");
+                    }
+                    final int rawTime = snapshot.data;
+                    final displayTime = StopWatchTimer.getDisplayTime(
+                        rawTime,
+                        hours: false,
+                        milliSecond: true);
+
+                    return Text(
+                      displayTime,
+                      style: TextStyle(fontSize: 30),
+                    );
+                  }),
+            ],
+          ),
+          onWillPop: () {
+            DateTime now = DateTime.now();
+            if (currentBackPressTime == null ||
+                now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+              currentBackPressTime = now;
+              Fluttertoast.showToast(msg: "Press again to exit");
+              return Future.value(false);
+            }
+            return Future.value(true);
+          },
+        ));
   }
 
   //region helpers
-
 
   List<Widget> _orderGenerator() {
     assert(widget.difficulty.numberOfTiles <= widget.listOfAssets.length);

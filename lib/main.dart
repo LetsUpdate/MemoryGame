@@ -41,7 +41,7 @@ class _MenuPageState extends State<MenuPage> {
   static const DIFFICULTY_LIST = [
     const LvlSettings(4),
     const LvlSettings(6),
-    const LvlSettings(6, roundDuration: Duration(seconds: 30))
+    const LvlSettings(6, roundDuration: Duration(seconds: 20))
   ];
   int difficultyLvl = 0;
   List<String> listOfAssets;
@@ -120,7 +120,7 @@ class _MenuPageState extends State<MenuPage> {
                           });
                         },
                       ),
-                      CheckArea(
+                      /*CheckArea(
                         text: "Stress",
                         value: difficultyLvl == 2,
                         onClick: () {
@@ -128,7 +128,7 @@ class _MenuPageState extends State<MenuPage> {
                             difficultyLvl = 2;
                           });
                         },
-                      ),
+                      ),*/
                     ],
                   ),
                   Container(
@@ -216,15 +216,15 @@ class _MenuPageState extends State<MenuPage> {
                     child: Column(
                       children: [
                         Text(
+                          "It is not working yet...",
+                          style: textStyle1,
+                        ),
+                        Text(
                           "Your fail rate is: ",
                           style: textStyle1,
                         ),
                         Text(
                           "You spent x minutes in the game ",
-                          style: textStyle1,
-                        ),
-                        Text(
-                          "asd",
                           style: textStyle1,
                         ),
                       ],
