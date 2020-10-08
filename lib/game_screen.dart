@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pendroid_2020_part1/score_system.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
@@ -44,14 +45,16 @@ class _GameScreenState extends State<GameScreen> {
   List<Widget> shuffeledCards;
   List<Widget> holderList;
 
+  DateTime _startTime;
+
   @override
   void initState() {
     randomCards = _orderGenerator();
     holderList = new List(randomCards.length);
     gameState = GameState.Show;
     shuffeledCards = Helper.shuffleList(randomCards.toList());
-
     super.initState();
+    _stopWatchTimer.onExecute.add(StopWatchExecute.start);
   }
 
   @override
@@ -61,18 +64,14 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _setGameState(GameState state) {
-    switch (state) {
-      case GameState.reorder:
-        _stopWatchTimer.onExecute.add(StopWatchExecute.start);
-        break;
-      case GameState.Show:
-        break;
-      case GameState.done:
-        _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
-        break;
-      case GameState.failed:
-        _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
-        break;
+    if (state == GameState.failed || GameState.done == state) {
+      if (state == GameState.failed)
+        scoreSystem.raiseFails();
+      else
+        scoreSystem.raiseSuccesses();
+      _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+      scoreSystem
+          .addTime(new Duration(milliseconds: _stopWatchTimer.rawTime.value));
     }
 
     setState(() {
@@ -238,7 +237,10 @@ class _GameScreenState extends State<GameScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text("You missed ${errors} objects", style: textStyle1,),
+                    Text(
+                      "You missed $errors objects",
+                      style: textStyle1,
+                    ),
                     RawMaterialButton(
                       fillColor: Colors.blue,
                       splashColor: Colors.greenAccent,

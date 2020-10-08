@@ -1,13 +1,17 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pendroid_2020_part1/game_screen.dart';
 import 'package:pendroid_2020_part1/helper.dart';
+import 'package:pendroid_2020_part1/score_system.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await scoreSystem.loadFromSave();
   runApp(MyApp());
 }
 
@@ -216,17 +220,32 @@ class _MenuPageState extends State<MenuPage> {
                     child: Column(
                       children: [
                         Text(
-                          "It is not working yet...",
+                          "You have ${scoreSystem.successes} wins and ${scoreSystem.fails} loses",
                           style: textStyle1,
                         ),
                         Text(
-                          "Your fail rate is: ",
+                          "Your wind rate is: ${scoreSystem.winRate}",
                           style: textStyle1,
                         ),
                         Text(
-                          "You spent x minutes in the game ",
+                          "You spent ${scoreSystem.allTime.inMinutes} minutes in the game",
                           style: textStyle1,
                         ),
+                        Text(
+                          "Your average time are: ${scoreSystem.averageTime.inSeconds} seconds",
+                          style: textStyle1,
+                        ),
+                        FlatButton(
+                          onPressed: () =>
+                              scoreSystem.clearStats().then((value) {
+                            setState(() {});
+                          }),
+                          child: Text(
+                            "ResetStats",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          color: Colors.white24,
+                        )
                       ],
                     ),
                   ),
@@ -247,7 +266,11 @@ class _MenuPageState extends State<MenuPage> {
             GameScreen(
               listOfAssets: listOfAssets,
               difficulty: DIFFICULTY_LIST[difficultyLvl],
-            )));
+            ))).then((value) {
+      setState(() {
+
+      });
+    });
   }
 }
 
