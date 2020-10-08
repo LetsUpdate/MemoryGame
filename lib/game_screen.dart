@@ -6,13 +6,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
+import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
+
+import 'helper.dart';
 
 class GameScreen extends StatefulWidget {
   final List<String> listOfAssets;
-  final double numberOfObjects;
+  final LvlSettings difficulty;
 
   const GameScreen(
-      {Key key, @required this.listOfAssets, @required this.numberOfObjects})
+      {Key key, @required this.listOfAssets, @required this.difficulty})
       : super(key: key);
 
   @override
@@ -43,7 +46,7 @@ class _GameScreenState extends State<GameScreen> {
     randomCards = _orderGenerator();
     holderList = new List(randomCards.length);
     gameState = GameState.Show;
-    shuffeledCards = _shuffleList(randomCards.toList());
+    shuffeledCards = Helper.shuffleList(randomCards.toList());
     super.initState();
   }
 
@@ -182,28 +185,13 @@ class _GameScreenState extends State<GameScreen> {
 
   //region helpers
 
-  List _shuffleList(List items) {
-    var random = new Random();
-
-    // Go through all elements.
-    for (var i = items.length - 1; i > 0; i--) {
-      // Pick a pseudorandom number according to the list length
-      var n = random.nextInt(i + 1);
-
-      var temp = items[i];
-      items[i] = items[n];
-      items[n] = temp;
-    }
-
-    return items;
-  }
 
   List<Widget> _orderGenerator() {
-    assert(widget.numberOfObjects <= widget.listOfAssets.length);
+    assert(widget.difficulty.numberOfTiles <= widget.listOfAssets.length);
     final copyOfAssets = widget.listOfAssets.toList();
     final randomList = [];
     final rand = new Random();
-    for (int i = 0; i < widget.numberOfObjects; i++) {
+    for (int i = 0; i < widget.difficulty.numberOfTiles; i++) {
       final randomNum = rand.nextInt(copyOfAssets.length);
       randomList.add(SvgPicture.asset(copyOfAssets[randomNum]));
       copyOfAssets.removeAt(randomNum);
