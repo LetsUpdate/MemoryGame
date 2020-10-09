@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pendroid_2020_part1/game_screen.dart';
 import 'package:pendroid_2020_part1/helper.dart';
+import 'package:pendroid_2020_part1/myButton.dart';
 import 'package:pendroid_2020_part1/score_system.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
@@ -188,19 +189,11 @@ class _MenuPageState extends State<MenuPage> {
                               ],
                             ),
                           ),
-                    RawMaterialButton(
-                      fillColor: Colors.blue,
-                      splashColor: Colors.greenAccent,
-                      shape: const StadiumBorder(),
+                    MyButton(
                       onPressed: _startGame,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Play and have fun',
-                          style: TextStyle(color: Colors.white, fontSize: 25),
-                        ),
-                      ),
-                    ),
+                      color: Colors.blue,
+                      text: "Play and have fun",
+                    )
                   ],
                 ),
               ),

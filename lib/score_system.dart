@@ -42,7 +42,9 @@ class ScoreSystem {
   }
 
   String get winRate {
-    return (_successes / _fails).toStringAsExponential(2);
+    if (_successes == 0 && _fails == 0) return '0';
+    return (((_successes == 0) ? 1 : _successes) / ((_fails == 0) ? 1 : _fails))
+        .toStringAsPrecision(2);
   }
 
   Future<void> loadFromSave() async {

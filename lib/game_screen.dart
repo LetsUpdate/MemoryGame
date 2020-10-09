@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pendroid_2020_part1/myButton.dart';
 import 'package:pendroid_2020_part1/score_system.dart';
 import 'package:pendroid_2020_part1/templates/imageCard.dart';
 import 'package:pendroid_2020_part1/templates/lvlSettings.dart';
@@ -90,13 +91,27 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     Widget body;
 
+    final _backToTheMenu = MyButton(
+      color: Colors.black26,
+      onPressed: () => Navigator.of(context).pop(),
+      text: "Back to the menu",
+    );
+    final _continueButton = MyButton(onPressed: () =>
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) =>
+                GameScreen(listOfAssets: widget.listOfAssets,
+                  difficulty: widget.difficulty,))),
+      text: "Next!",
+      color: Colors.green,);
+
     const textStyle1 = TextStyle(color: Colors.white, fontSize: 20);
 
     final orderedWidgets = _imageHolder(randomCards
-        .map((e) => ImageCard(
-              image: e,
-              text: (randomCards.indexOf(e) + 1).toString(),
-            ))
+        .map((e) =>
+        ImageCard(
+          image: e,
+          text: (randomCards.indexOf(e) + 1).toString(),
+        ))
         .toList());
 
     switch (gameState) {
@@ -106,9 +121,11 @@ class _GameScreenState extends State<GameScreen> {
           child: Column(
             children: [
               orderedWidgets,
-              RaisedButton(
+              SizedBox(height: 30,),
+              MyButton(
                 onPressed: () => _setGameState(GameState.reorder),
-                child: Text('Reorder!'),
+                color: Colors.green,
+                text: "Reorder",
               )
             ],
           ),
@@ -179,27 +196,19 @@ class _GameScreenState extends State<GameScreen> {
             ));
         break;
       case GameState.done:
+
         body = Center(
           key: Key("done"),
           child: Column(
             children: [orderedWidgets,
-              RawMaterialButton(
-                fillColor: Colors.green,
-                splashColor: Colors.greenAccent,
-                shape: const StadiumBorder(),
-                onPressed: () =>
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) =>
-                            GameScreen(listOfAssets: widget.listOfAssets,
-                              difficulty: widget.difficulty,))),
+              _continueButton,
+              Expanded(child: Align(
+                alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Next',
-                    style: TextStyle(color: Colors.white, fontSize: 25),
-                  ),
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: _backToTheMenu,
                 ),
-              ),
+              )),
             ],
 
           ),
@@ -241,23 +250,19 @@ class _GameScreenState extends State<GameScreen> {
                       "You missed $errors objects",
                       style: textStyle1,
                     ),
-                    RawMaterialButton(
-                      fillColor: Colors.blue,
-                      splashColor: Colors.greenAccent,
-                      shape: const StadiumBorder(),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Back to the menu',
-                          style: TextStyle(color: Colors.white, fontSize: 25),
-                        ),
-                      ),
-                    ),
+
                   ],
 
                 ),
-              )
+              ),
+              _continueButton,
+              Expanded(child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: _backToTheMenu,
+                ),
+              )),
             ],
           ),
         );
